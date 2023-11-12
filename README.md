@@ -2,6 +2,8 @@
 
 This is a simple [Vivado 2023.1](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vivado-design-tools/2023-1.html) starter project for the [XCKU15P FPGA](https://www.xilinx.com/products/silicon-devices/fpga/kintex-ultrascale-plus.html) on the [Innova-2 Flex SmartNIC](https://www.nvidia.com/en-us/networking/ethernet/innova-2-flex/) that implements a PCIe [XDMA](https://docs.xilinx.com/r/en-US/pg195-pcie-dma/Introduction) interface to BRAM and GPIO. LED D19 is connected to a divided down PCIe clock and blinks about once every second if XDMA is working.
 
+This project was designed and tested on the [Innova2 8GB MNV303212A-ADLT](https://www.mellanox.com/files/doc-2020/pb-innova-2-flex.pdf) board but should be compatible with the [Innova2 4GB MNV303212A-ADIT/MNV303212A-ADIT](https://network.nvidia.com/pdf/eol/LCR-000437.pdf) and [MNV303611A-EDLT](https://www.mellanox.com/files/doc-2020/pb-innova-2-flex.pdf) as it only uses resources common to all the boards.
+
 
 
 
@@ -14,7 +16,7 @@ This is a simple [Vivado 2023.1](https://www.xilinx.com/support/download/index.h
 
 ## Program the Design into the XCKU15P Configuration Memory
 
-Refer to the [innova2_flex_xcku15p_notes](https://github.com/mwrnd/innova2_flex_xcku15p_notes/) project's instructions on [Loading a User Image using `innova2_flex_app`](https://github.com/mwrnd/innova2_flex_xcku15p_notes/#loading-a-user-image). It includes instructions on setting up an Innova-2 system including [Xilinx's PCIe XDMA Drivers (dma_ip_drivers)](https://github.com/Xilinx/dma_ip_drivers).
+Refer to the [innova2_flex_xcku15p_notes](https://github.com/mwrnd/innova2_flex_xcku15p_notes/) project's instructions on [Loading a User Image using `innova2_flex_app`](https://github.com/mwrnd/innova2_flex_xcku15p_notes/#loading-a-user-image) which includes instructions on setting up an Innova-2 system including [Xilinx's PCIe XDMA Drivers (dma_ip_drivers)](https://github.com/Xilinx/dma_ip_drivers).
 
 ```
 git clone https://github.com/mwrnd/innova2_xdma_demo.git
@@ -44,6 +46,8 @@ lspci -nn | grep "Mellanox\|Xilinx"
 lspci -tv | grep "0000\|Mellanox\|Xilinx"
 ```
 
+![lspci Xilinx and Mellanox Devices](img/lspci_view_of_innova2_FPGA.jpg)
+
 The FPGA is attached to a PCIe Bridge (`02:08.0`), as are the two Ethernet Controllers (`02:10.0`).
 ```
 01:00.0 PCI bridge [0604]: Mellanox Technologies MT28800 Family [ConnectX-5 PCIe Bridge] [15b3:1974]
@@ -59,11 +63,9 @@ The FPGA is attached to a PCIe Bridge (`02:08.0`), as are the two Ethernet Contr
            |                                            \-00.1  Mellanox Technologies MT27800 Family [ConnectX-5]
 ```
 
-![lspci Xilinx and Mellanox Devices](img/lspci_view_of_innova2_FPGA.jpg)
-
 The current PCIe Link status is useful. Note this is the FPGA to ConnectX-5 PCIe Bridge link.
 ```
-sudo lspci -nnvd 10ee:   ;   sudo lspci -nnvvd 10ee: | grep Lnk
+sudo lspci -nnvd 10ee:  ;  sudo lspci -nnvvd 10ee: | grep Lnk
 ```
 
 ![lspci Link Status](img/lspci_Lnk.png)
@@ -113,7 +115,7 @@ md5sum TEST RECV
 
 #### AXI BRAM and Files
 
-The AXI Blocks can also be accessed using [`dd`](https://manpages.debian.org/testing/coreutils/dd.1.en.html). Note `dd` requires numbers in Base-10 so you can use [`printf`](https://manpages.debian.org/testing/coreutils/printf.1.en.html) to convert from the hex address, `0x80000000=2147483648`.
+The AXI Blocks can also be accessed using [`dd`](https://manpages.debian.org/testing/coreutils/dd.1.en.html). Note `dd` requires numbers in Base-10 so you can use [`printf`](https://manpages.debian.org/testing/coreutils/printf.1.en.html) to convert from the hex address, `0x80000000=2147483648`. Note `count=1` as this is a single transfer to address `0x80000000` so the [lseek](https://manpages.ubuntu.com/manpages/focal/en/man2/write.2.html#description) address should not be reset.
 
 ```
 dd if=/dev/urandom of=TEST bs=8192 count=256
@@ -141,6 +143,7 @@ md5sum TEST RECV
 
 ![XDMA BRAM Testing Using All-Zeros](img/XDMA_BRAM_Test_using_zeros.png)
 
+Now an [all-ones](https://stackoverflow.com/questions/10905062/how-do-i-get-an-equivalent-of-dev-one-in-linux) file:
 ```
 tr '\0' '\377' </dev/zero | dd of=TEST bs=8192 count=256 iflag=fullblock
 sudo dd if=TEST of=/dev/xdma0_h2c_0 bs=2097152 count=1 seek=2147483648 oflag=seek_bytes
@@ -169,9 +172,9 @@ sudo dd if=/dev/xdma0_c2h_0 of=/dev/null bs=2097152 count=1 skip=2147483648 ifla
 
 ### AXI-Lite and GPIO Control
 
-![User LED](img/User_LEDs_on_Innova2.png)
+![User LED](img/User_LEDs_on_Innova2.jpg)
 
-The design includes an [AXI GPIO](https://docs.xilinx.com/v/u/3.0-English/ds744_axi_gpio) block to control Pin *B6*, the **D18** LED on the back of the Innova-2. The LED control is inverted so the design include a signal inverter. The LED can be turned on by writing a `0x01` to the `GPIO_DATA` Register. Only a single bit is enabled in the port so excess bit writes are ignored. No direction control writes are necessary as the port is set up for output-only (the `GPIO_TRI` Direction Control Register is fixed at `0xffffffff`).
+The design includes an [AXI GPIO](https://docs.xilinx.com/v/u/3.0-English/ds744_axi_gpio) block to control Pin *B6*, the **D18** LED on the back of the Innova-2. The LED control is inverted so the design includes a signal inverter. The LED can be turned on by writing a `0x01` to the `GPIO_DATA` Register. Only a single bit is enabled in the port so excess bit writes are ignored. No direction control writes are necessary as the port is set up for output-only (the `GPIO_TRI` Direction Control Register is fixed at `0xffffffff`).
 
 ![AXI GPIO](img/AXI_GPIO.png)
 
@@ -200,38 +203,9 @@ sudo ./innova2_xdma_test
 
 ![innova2_xdma_test.c Run](img/innova2_xdma_test_Run.png)
 
-The design allows for measuring the frequency of various connected clocks by [comparing](aaaaaaLINKTOCODE) them to the 250MHz XDMA *axi_aclk*. This is done by connecting the clocks to [counters](https://docs.xilinx.com/v/u/en-US/pg121-c-counter-binary) and those counters to dual-channel [GPIO](https://docs.xilinx.com/v/u/en-US/pg144-axi-gpio) Blocks where one channel is *axi_aclk* and the other is the clock to measure.
+The design allows for measuring the frequency of various connected clocks by [comparing](https://github.com/mwrnd/innova2_xdma_demo/blob/f1dba215a96e209c0a278857c47d4f3ddf8e8f3f/innova2_xdma_test.c#L173) them to the 250MHz XDMA *axi_aclk*. This is done by connecting the clocks to [counters](https://docs.xilinx.com/v/u/en-US/pg121-c-counter-binary) and those counters to dual-channel [GPIO](https://docs.xilinx.com/v/u/en-US/pg144-axi-gpio) Blocks where one channel is *axi_aclk* and the other is the clock to measure. Note *uram_clk* is estimated to be 200MHz.
 
 ![PG144 AXI GPIO Addresses](img/pg144_AXI_GPIO_Addresses.png)
-
-
-
-
-## Recreating the Design in Vivado
-
-Run the `source` command from the main Vivado **2023.1** window. Only some versions of Vivado successfully implement this block design.
-
-```
-cd innova2_xdma_demo
-dir
-source innova2_xdma_demo.tcl
-```
-
-![Source Project Files](img/Vivado_source_project_files.png)
-
-Click on *Generate Bitstream*.
-
-![Generate Bitstream](img/Vivado_Generate_Bitstream.png)
-
-Synthesis and implementation should complete within an hour (`00:57`+`21:05`+`16:37`=`38:39`).
-
-![Synthesis and Implemetation Results](img/innova2_xdma_Resources_Used.png)
-
-Once the Bitstream is generated, run *Write Memory Configuration File*, select *bin*, *mt25qu512_x1_x2_x4_x8*, *SPIx8*, *Load bitstream files*, and a location and name for the output binary files. The bitstream will end up in the `innova2_xdma_demo/innova2_xdma_demo.runs/impl_1` directory as `xdma_wrapper.bit`. Vivado will add the `_primary.bin` and `_secondary.bin` extensions as the Innova-2 uses dual MT25QU512 FLASH ICs in x8 for high speed programming.
-
-![Write Memory Configuration File](img/Vivado_Write_Memory_Configuration_File.png)
-
-Proceed to [Loading a User Image](https://github.com/mwrnd/innova2_flex_xcku15p_notes/#loading-a-user-image)
 
 
 
@@ -382,7 +356,7 @@ sudo lspci -nnvd 10ee:   ;   sudo lspci -nnvvd 10ee: | grep Lnk
 
 #### Test AXI Blocks Over JTAG
 
-With the PCIe XDMA Block working again, the [JTAG-to-AXI](https://docs.xilinx.com/v/u/en-US/pg174-jtag-axi) Blocks can be tested.
+With the PCIe XDMA Block working, the [JTAG-to-AXI](https://docs.xilinx.com/v/u/en-US/pg174-jtag-axi) Blocks can be tested.
 
 ![JTAG-to-AXI Addresses](img/innova2_xdma_demo_JTAG-to-AXI_Addresses.png)
 
@@ -440,15 +414,44 @@ sudo ./innova2_xdma_test
 
 
 
+## Recreating the Design in Vivado
+
+Run the `source` command from the main Vivado **2023.1** window. Only some versions of Vivado successfully implement this block design.
+
+```
+cd innova2_xdma_demo
+dir
+source innova2_xdma_demo.tcl
+```
+
+![Source Project Files](img/Vivado_source_project_files.png)
+
+Click on *Generate Bitstream*.
+
+![Generate Bitstream](img/Vivado_Generate_Bitstream.png)
+
+Synthesis and implementation should complete within an hour (`00:57`+`21:05`+`16:37`=`38:39`).
+
+![Synthesis and Implemetation Results](img/innova2_xdma_Resources_Used.png)
+
+Once the Bitstream is generated, run *Write Memory Configuration File*, select *bin*, *mt25qu512_x1_x2_x4_x8*, *SPIx8*, *Load bitstream files*, and a location and name for the output binary files. The bitstream will end up in the `innova2_xdma_demo/innova2_xdma_demo.runs/impl_1` directory as `xdma_wrapper.bit`. Vivado will add the `_primary.bin` and `_secondary.bin` extensions as the Innova-2 uses dual MT25QU512 FLASH ICs in x8 for high speed programming.
+
+![Write Memory Configuration File](img/Vivado_Write_Memory_Configuration_File.png)
+
+Proceed to [Loading a User Image](https://github.com/mwrnd/innova2_flex_xcku15p_notes/#loading-a-user-image)
+
+
+
+
 ## Design Notes
 
 ### BRAM Controller Uses UltraRAM
 
-The [Ultrascale+ FPGA Product Selection Guide](ultrascale-plus-fpga-product-selection-guide.pdf) lists the XCKU15P as having 36Mbit of UltraRAM.
+The [Ultrascale+ FPGA Product Selection Guide](https://docs.xilinx.com/v/u/en-US/ultrascale-plus-fpga-product-selection-guide) lists the XCKU15P as having 36Mbit of UltraRAM.
 
 ![UltraScale+ Product Selection Guide KU15P](img/KU15P_Product_Selection_Info.png)
 
-All the UltraRAM is in a single column:
+All the UltraRAM is in a single column which can be seen when an Implemented design is opened in Vivado:
 
 ![XCKU15P Implemented Design View of URAM Blocks](img/XCKU15P_Implemented_Design_View_URAM_Blocks.png)
 
@@ -456,7 +459,7 @@ UltraRAM can be cascaded and `(36000000/8/1024/1024)~=4.29` so 4MByte of range s
 
 ![UltraScale UltraRAM Blocks can be Cascaded](img/UltraScale_UltraRAM_Blocks.png)
 
-2MB of URAM running at about 220MHz is the optimal usable single URAM BRAM Block that will consistently pass implementation.
+2MB of URAM running at about 220MHz is the maximal usable single URAM BRAM Block that will consistently pass implementation.
 
 ![UltraRAM Range is 2M](img/BRAM_Controller_UltraRAM_Range_is_2M_for_2MB.png)
 
