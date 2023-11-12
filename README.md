@@ -2,7 +2,7 @@
 
 This is a simple [Vivado 2023.1](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vivado-design-tools/2023-1.html) starter project for the [XCKU15P FPGA](https://www.xilinx.com/products/silicon-devices/fpga/kintex-ultrascale-plus.html) on the [Innova-2 Flex SmartNIC](https://www.nvidia.com/en-us/networking/ethernet/innova-2-flex/) that implements a PCIe [XDMA](https://docs.xilinx.com/r/en-US/pg195-pcie-dma/Introduction) interface to BRAM and GPIO. LED D19 is connected to a divided down PCIe clock and blinks about once every second if XDMA is working.
 
-This project was designed and tested on the [Innova2 8GB MNV303212A-ADLT](https://www.mellanox.com/files/doc-2020/pb-innova-2-flex.pdf) board but should be compatible with the [Innova2 4GB MNV303212A-ADIT/MNV303212A-ADIT](https://network.nvidia.com/pdf/eol/LCR-000437.pdf) and [MNV303611A-EDLT](https://www.mellanox.com/files/doc-2020/pb-innova-2-flex.pdf) as it only uses resources common to all the boards.
+This project was designed and tested on the [Innova2 8GB MNV303212A-ADLT](https://www.mellanox.com/files/doc-2020/pb-innova-2-flex.pdf) board but should be compatible with the [Innova2 4GB MNV303212A-ADAT/MNV303212A-ADIT](https://network.nvidia.com/pdf/eol/LCR-000437.pdf) and [MNV303611A-EDLT](https://www.mellanox.com/files/doc-2020/pb-innova-2-flex.pdf) as it only uses resources common to all the boards.
 
 
 
