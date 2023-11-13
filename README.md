@@ -426,7 +426,7 @@ dir
 source innova2_xdma_demo.tcl
 ```
 
-![Source Project Files](img/Vivado_source_project_files.png)
+![Source Project Files](img/Vivado_source_Project_Tcl.png)
 
 Click on *Generate Bitstream*.
 
