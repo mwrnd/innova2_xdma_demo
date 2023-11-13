@@ -4,6 +4,8 @@ This is a simple [Vivado 2023.1](https://www.xilinx.com/support/download/index.h
 
 This project was designed and tested on the [Innova2 8GB MNV303212A-ADLT](https://www.mellanox.com/files/doc-2020/pb-innova-2-flex.pdf) board but should be compatible with the [Innova2 4GB MNV303212A-ADAT/MNV303212A-ADIT](https://network.nvidia.com/pdf/eol/LCR-000437.pdf) and [MNV303611A-EDLT](https://www.mellanox.com/files/doc-2020/pb-innova-2-flex.pdf) as it only uses resources common to all the boards.
 
+Refer to [this tutorial](https://github.com/mwrnd/notes/tree/main/Vivado_XDMA_DDR4_Tutorial) for detailed instructions on generating a similar project from scratch.
+
 
 
 
