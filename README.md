@@ -21,7 +21,7 @@ Refer to [this tutorial](https://github.com/mwrnd/notes/tree/main/Vivado_XDMA_DD
 Refer to the [innova2_flex_xcku15p_notes](https://github.com/mwrnd/innova2_flex_xcku15p_notes/) project's instructions on [Loading a User Image using `innova2_flex_app`](https://github.com/mwrnd/innova2_flex_xcku15p_notes/#loading-a-user-image) which includes instructions on setting up an Innova-2 system including [Xilinx's PCIe XDMA Drivers (dma_ip_drivers)](https://github.com/Xilinx/dma_ip_drivers).
 
 ```
-git clone https://github.com/mwrnd/innova2_xdma_demo.git
+git clone --depth=1 https://github.com/mwrnd/innova2_xdma_demo.git
 cd innova2_xdma_demo
 md5sum *bin
 echo 17f1703276cc6ab8bc88f840a036c17c should be md5sum of innova2_xdma_demo_primary.bin
