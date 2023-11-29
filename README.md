@@ -226,7 +226,7 @@ The clock is changed to 208.33333MHz from the initial 200MHz.
 
 ![Clocking Wizard Set URAM Clock to 208.33333](img/Clocking_Wizard_clk_wiz_0_Set_Output_to_208.33333.png)
 
-This change improves estimated clock jitter performance in addition to running the URAM faster.
+This change improves estimated clock jitter performance (119.392->102.651) in addition to running the URAM faster.
 
 ![Clocking Wizard Change Improves Jitter](img/Clocking_Wizard_clk_wiz_0_Clocking_Primitive_Attributes.png)
 
@@ -246,7 +246,12 @@ cat /boot/config-5.8.0-43-generic | grep -i pci | grep -i hotplug
 
 ![linux kernel config pci hotplug](img/linux_kernel_config_pci_hotplug.png)
 
-Schedule the Innova2 [Flex Image using `innova2_flex_app`]((https://github.com/mwrnd/innova2_flex_xcku15p_notes/#loading-a-user-image)) and reboot. Find its bus address, the `03` below, and remove then rescan the PCIe bus.
+
+
+
+#### Check PCIe Remove and Rescan
+
+Check if your design can be removed and rescanned. Find its bus address, the `03` below, and remove then rescan the PCIe bus.
 ```
 lspci -nn -d 15b3:
 sudo lspci -tv -nn -d 15b3:
@@ -260,8 +265,6 @@ exit
 ```
 
 ![Remove and Rescan the Flex Burn Image](img/innova2_burn_image_remove_and_rescan.jpg)
-
-If the above succeeds you can schedule the [User Image using `innova2_flex_app`](https://github.com/mwrnd/innova2_flex_xcku15p_notes/#loading-a-user-image).
 
 
 
