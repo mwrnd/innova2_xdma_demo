@@ -271,7 +271,7 @@ exit
 
 #### Enable JTAG Access to the Innova2
 
-Run `innova2_flex_app` and choose option `3`-Enter to enable JTAG Access then `99`-Enter to exit.
+Run `innova2_flex_app` and choose option `3`-Enter to enable JTAG Access then `99`-Enter to exit. The *Enable JTAG Access* feature will reset to disabled after a system reboot.
 ```
 sudo mst start
 cd ~/Innova_2_Flex_Open_18_12/driver/
