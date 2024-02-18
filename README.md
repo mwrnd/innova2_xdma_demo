@@ -249,26 +249,6 @@ cat /boot/config-5.8.0-43-generic | grep -i pci | grep -i hotplug
 
 
 
-#### Check PCIe Remove and Rescan
-
-Check if your design can be removed and rescanned. Find its bus address, the `03` below, and remove then rescan the PCIe bus.
-```
-lspci -nn -d 15b3:
-sudo lspci -tv -nn -d 15b3:
-
-sudo su
-echo 1 > /sys/bus/pci/devices/0000\:03\:00.0/remove
-lspci -nn -d 15b3:
-echo 1 > /sys/bus/pci/rescan 
-lspci -nn -d 15b3:
-exit
-```
-
-![Remove and Rescan the Flex Burn Image](img/innova2_burn_image_remove_and_rescan.jpg)
-
-
-
-
 #### Enable JTAG Access to the Innova2
 
 Run `innova2_flex_app` and choose option `3`-Enter to enable JTAG Access then `99`-Enter to exit. The *Enable JTAG Access* feature will reset to disabled after a system reboot.
